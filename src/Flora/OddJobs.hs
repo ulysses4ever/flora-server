@@ -19,6 +19,7 @@ module Flora.OddJobs
 where
 
 import Commonmark qualified
+import Commonmark.Extensions (gfmExtensions)
 import Control.Concurrent (forkIO)
 import Control.Exception
 import Control.Monad
@@ -122,9 +123,8 @@ makeReadme pay@MkReadmePayload{..} = localDomain "fetch-readme" $ do
       logInfo ("got a body for package " <> display mpPackage) (object ["release_id" .= mpReleaseId])
 
       htmlTxt <- do
-        -- let extensions = emojiSpec
-        -- Commonmark.commonmarkWith extensions ("readme " <> show mpPackage) bodyText
-        pure (Commonmark.commonmark ("readme " <> show mpPackage) bodyText)
+        let extensions = gfmExtensions <> Commonmark.defaultSyntaxSpec
+        Commonmark.commonmarkWith extensions ("readme " <> show mpPackage) bodyText
           >>= \case
             Left exception -> throw (MarkdownFailed exception)
             Right (y :: Commonmark.Html ()) -> pure $ Commonmark.renderHtml y
